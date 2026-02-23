@@ -21,10 +21,12 @@ export async function handler(event) {
 
     const data = await response.json();
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(data)
-    };
+   return {
+  statusCode: 200,
+  body: JSON.stringify({
+    text: data.candidates?.[0]?.content?.parts?.[0]?.text
+  })
+};
 
   } catch (error) {
     return {

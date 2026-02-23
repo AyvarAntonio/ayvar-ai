@@ -128,27 +128,18 @@ export class GeminiService {
   private executeRequest(prompt: string, normalizedPrompt: string, observer: any) {
     this.lastRequestTime = Date.now();
     this.requestCount++;
+    
 
     console.log('⏳ Enviando a Netlify Function...');
 
     this.http.post<any>('/.netlify/functions/chat', {
       message: prompt
     }).subscribe({
-      next: (data) => {
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta válida';
-        
-        this.cache.set(normalizedPrompt, {
-          response: text,
-          timestamp: Date.now()
-        });
-
-        this.quotaExceeded = false;
-        this.saveQuotaState();
-
-        console.log('✅ Respuesta recibida');
-        observer.next(text);
-        observer.complete();
-      },
+      next: (data: any) => {
+  console.log("RESPUESTA CRUDA:", data);
+  observer.next("Revisa consola");
+  observer.complete();
+},
       error: (error) => {
         console.error('❌ Error:', error);
 
