@@ -135,9 +135,12 @@ export class GeminiService {
     this.http.post<any>('/.netlify/functions/chat', {
       message: prompt
     }).subscribe({
-      next: (data: any) => {
+     next: (data: any) => {
   console.log("RESPUESTA CRUDA:", data);
-  observer.next("Revisa consola");
+
+  const text = data?.text || "Sin respuesta válida";
+
+  observer.next(text);
   observer.complete();
 },
       error: (error) => {
