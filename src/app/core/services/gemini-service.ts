@@ -1,22 +1,22 @@
-// core/services/gemini-service.ts
 import { Injectable } from '@angular/core';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { environment } from '../../../enviroments/environment';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GeminiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+
+  constructor(private http: HttpClient) {
+    this.loadQuotaState();
+  }
+
   private cache = new Map<string, {response: string, timestamp: number}>();
   private lastRequestTime = Date.now();
   private requestCount = 0;
   private quotaExceeded = false;
   private quotaResetTime = 0;
-  
-  // Respuestas predefinidas AMPLIADAS para cuando se excede la cuota
+
   private localResponses = new Map([
     // Saludos
     ['hola', '¡Hola! ¿En qué puedo ayudarte? ⚡'],
@@ -70,41 +70,21 @@ export class GeminiService {
     ['motivación', '¡Tú puedes lograr todo lo que te propongas! El éxito es la suma de pequeños esfuerzos repetidos día tras día. 💪'],
     ['motivation', 'You can achieve anything you set your mind to! Success is the sum of small efforts repeated day after day. 💪'],
     
-    // Relaciones (como tu ejemplo)
+    // Relaciones
     ['le gusto a alguien', '¡Excelente pregunta! Aquí hay algunos consejos:\n\n1. Observa las señales: contacto visual, sonrisas, buscar tu compañía\n2. Comunícate abiertamente pero con respeto\n3. Sé auténtico, no finjas ser quien no eres\n4. Construye una conexión genuina basada en intereses comunes\n5. Da el primer paso cuando sientas que es el momento adecuado\n\n¿Quieres que profundice en algún aspecto específico? 💕'],
     ['gusta a alguien', '¡Excelente pregunta! Aquí hay algunos consejos:\n\n1. Observa las señales: contacto visual, sonrisas, buscar tu compañía\n2. Comunícate abiertamente pero con respeto\n3. Sé auténtico, no finjas ser quien no eres\n4. Construye una conexión genuina basada en intereses comunes\n5. Da el primer paso cuando sientas que es el momento adecuado\n\n¿Quieres que profundice en algún aspecto específico? 💕']
   ]);
 
-  constructor() {
-    this.genAI = new GoogleGenerativeAI(environment.geminiApiKey);
-
-    // Configuración para gemini-2.5-flash
-    this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-        topP: 0.8,
-        topK: 20
-      }
-    });
-    
-    // Intentar restaurar estado de cuota
-    this.loadQuotaState();
-  }
-
-  // ✅ MÉTODO PRINCIPAL con control de cuota
   sendMessageFast(prompt: string): Observable<string> {
     return new Observable(observer => {
-      // 1. Verificar si la cuota está excedida
+      // 1. Verificar cuota
       if (this.quotaExceeded && Date.now() < this.quotaResetTime) {
         const waitTime = Math.ceil((this.quotaResetTime - Date.now()) / 1000);
         console.log(`⏳ Cuota excedida. Usando respuestas locales por ${waitTime}s`);
         
-        // Buscar respuesta local
         const localResponse = this.findBestLocalResponse(prompt);
         if (localResponse) {
-          observer.next(localResponse + `\n\n[Modo offline: La cuota de Gemini se restablecerá en ${waitTime} segundos]`);
+          observer.next(localResponse + `\n\n[Modo offline: La cuota se restablecerá en ${waitTime} segundos]`);
         } else {
           observer.next(`⏰ Límite de peticiones alcanzado. La cuota se restablecerá en ${waitTime} segundos. Por favor espera.`);
         }
@@ -112,10 +92,10 @@ export class GeminiService {
         return;
       }
 
-      // 2. NORMALIZAR PROMPT
+      // 2. Normalizar prompt
       const normalizedPrompt = prompt.toLowerCase().trim();
       
-      // 3. VERIFICAR RESPUESTAS LOCALES (para preguntas muy específicas)
+      // 3. Verificar respuestas locales exactas
       if (this.localResponses.has(normalizedPrompt)) {
         console.log('⚡ Respuesta local instantánea');
         observer.next(this.localResponses.get(normalizedPrompt)!);
@@ -123,18 +103,18 @@ export class GeminiService {
         return;
       }
 
-      // 4. VERIFICAR CACHÉ
+      // 4. Verificar caché
       const cached = this.cache.get(normalizedPrompt);
-      if (cached && Date.now() - cached.timestamp < 3600000) { // 1 hora
+      if (cached && Date.now() - cached.timestamp < 3600000) {
         console.log('⚡ Respuesta desde caché');
         observer.next(cached.response);
         observer.complete();
         return;
       }
 
-      // 5. CONTROL DE RATIO
+      // 5. Control de ratio
       const now = Date.now();
-      if (now - this.lastRequestTime < 2000) { // 2 segundos entre peticiones
+      if (now - this.lastRequestTime < 2000) {
         console.log('⏳ Respetando límite de ratio...');
         setTimeout(() => {
           this.executeRequest(prompt, normalizedPrompt, observer);
@@ -148,56 +128,50 @@ export class GeminiService {
   private executeRequest(prompt: string, normalizedPrompt: string, observer: any) {
     this.lastRequestTime = Date.now();
     this.requestCount++;
-    
-    (async () => {
-      try {
-        console.log('⏳ Enviando a Gemini 2.5...');
+
+    console.log('⏳ Enviando a Netlify Function...');
+
+    this.http.post<any>('/.netlify/functions/chat', {
+      message: prompt
+    }).subscribe({
+      next: (data) => {
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta válida';
         
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
-        
-        // Guardar en caché
         this.cache.set(normalizedPrompt, {
           response: text,
           timestamp: Date.now()
         });
-        
-        // Resetear flag de cuota si estaba activo
+
         this.quotaExceeded = false;
         this.saveQuotaState();
-        
+
         console.log('✅ Respuesta recibida');
         observer.next(text);
         observer.complete();
-        
-      } catch (error: any) {
+      },
+      error: (error) => {
         console.error('❌ Error:', error);
-        
-        // Detectar error de cuota (429)
-        if (error?.status === 429 || error?.message?.includes('429')) {
+
+        if (error.status === 429) {
           this.quotaExceeded = true;
-          this.quotaResetTime = Date.now() + 24 * 60 * 60 * 1000; // 24 horas
+          this.quotaResetTime = Date.now() + 24 * 60 * 60 * 1000;
           this.saveQuotaState();
           
-          // Buscar mejor respuesta local
           const localResponse = this.findBestLocalResponse(prompt);
           if (localResponse) {
-            observer.next(localResponse + '\n\n[Límite de Gemini alcanzado. Usando respuestas locales por hoy.]');
+            observer.next(localResponse + '\n\n[Límite alcanzado. Usando respuestas locales por hoy.]');
           } else {
-            observer.next('⏰ Límite de peticiones diarias alcanzado. Vuelve mañana para más respuestas personalizadas.');
+            observer.next('⏰ Límite de peticiones diarias alcanzado. Vuelve mañana.');
           }
         } else {
-          // Otros errores
           observer.next(this.findBestLocalResponse(prompt) || 'Error al obtener respuesta. Intenta de nuevo.');
         }
-        
+
         observer.complete();
       }
-    })();
+    });
   }
 
-  // ✅ Buscar la mejor respuesta local basada en palabras clave
   private findBestLocalResponse(prompt: string): string | null {
     const lower = prompt.toLowerCase();
     
@@ -270,9 +244,7 @@ Algunas perspectivas:
     return null;
   }
 
-  // ✅ Método para continuar conversación
   continueConversation(context: string, lastPrompt: string): Observable<string> {
-    // Si la cuota está excedida, usar respuestas locales
     if (this.quotaExceeded && Date.now() < this.quotaResetTime) {
       return of('⏰ Límite de peticiones diarias alcanzado. Vuelve mañana para continuar esta conversación.');
     }
@@ -284,51 +256,25 @@ Algunas perspectivas:
     return this.sendMessageFast(fullPrompt);
   }
 
-  // ✅ Guardar estado de cuota
   private saveQuotaState() {
-    const state = {
+    localStorage.setItem('gemini_quota', JSON.stringify({
       quotaExceeded: this.quotaExceeded,
       quotaResetTime: this.quotaResetTime
-    };
-    localStorage.setItem('gemini_quota', JSON.stringify(state));
+    }));
   }
 
-  // ✅ Cargar estado de cuota
   private loadQuotaState() {
     const saved = localStorage.getItem('gemini_quota');
     if (saved) {
       const state = JSON.parse(saved);
       this.quotaExceeded = state.quotaExceeded;
       this.quotaResetTime = state.quotaResetTime;
-      
-      // Si ya pasó el tiempo de reset, limpiar
+
       if (Date.now() > this.quotaResetTime) {
         this.quotaExceeded = false;
         this.quotaResetTime = 0;
       }
     }
-  }
-
-  streamMessage(prompt: string): Observable<string> {
-    return new Observable(observer => {
-      (async () => {
-        try {
-          const result = await this.model.generateContentStream(prompt);
-          
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            if (chunkText) {
-              observer.next(chunkText);
-            }
-          }
-          
-          observer.complete();
-        } catch (error) {
-          observer.next(this.findBestLocalResponse(prompt) || 'Error en streaming');
-          observer.complete();
-        }
-      })();
-    });
   }
 
   clearCache() {
