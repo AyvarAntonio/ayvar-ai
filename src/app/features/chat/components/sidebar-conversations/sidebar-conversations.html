@@ -1,0 +1,9 @@
+<div class="sidebar-conversations">
+  <h3>Conversaciones</h3>
+  <ul>
+    <li *ngFor="let convo of conversations" (click)="selectConversation(convo)" [class.active]="convo.id === selectedId">
+      <span>{{ convo.title || ('Conversación ' + convo.id) }}</span>
+      <span class="date">{{ convo.date | date:'short' }}</span>
+    </li>
+  </ul>
+</div>
