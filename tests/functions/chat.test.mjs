@@ -1,6 +1,6 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { handler } from './chat.js';
+import { handler } from '../../netlify/functions/chat.js';
 
 const originalFetch = globalThis.fetch;
 const originalKey = process.env.GEMINI_API_KEY;

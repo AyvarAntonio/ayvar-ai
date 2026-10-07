@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:functions": "node --test netlify/functions/chat.test.mjs",
+    "test:functions": "node --test tests/functions/chat.test.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "prettier": {
