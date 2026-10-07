@@ -29,14 +29,14 @@ import { IconComponent } from '../icon/icon';
   `,
   styles: [`
     .toast-stack { position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); right: 24px; z-index: 100; display: grid; gap: 10px; width: min(400px, calc(100vw - 32px)); pointer-events: none; }
-    .toast { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; color: #e5eee3; background: #18211bf5; border: 1px solid #c0f87830; border-radius: 13px; box-shadow: 0 12px 50px #0007; font-size: 13px; line-height: 1.5; animation: enter .25s ease; pointer-events: auto; }
+    .toast { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; color: hsl(calc(var(--neon-hue) + 23) 24% 91%); background: hsl(calc(var(--neon-hue) + 54) 16% 11% / 0.961); border: 1px solid rgb(var(--accent-rgb) / 0.188); border-radius: 13px; box-shadow: 0 12px 50px #0007; font-size: 13px; line-height: 1.5; animation: enter .25s ease; pointer-events: auto; }
     .toast-icon { color: var(--accent); display: flex; }
     .toast > span:nth-child(2) { flex: 1; }
     .toast.error { border-color: #ff969e50; background: #28191ef5; }
     .toast.error .toast-icon { color: var(--danger); }
     dialog { width: 440px; }
     .dialog-top { display: flex; align-items: center; justify-content: space-between; }
-    .dialog-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: #c0f87810; color: var(--accent); }
+    .dialog-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: rgb(var(--accent-rgb) / 0.063); color: var(--accent); }
     .dialog-icon.danger { color: var(--danger); background: #ff969e12; }
     h2 { font: 600 23px var(--display); margin: 24px 0 12px; }
     p { color: var(--muted); font-size: 14px; line-height: 1.8; white-space: pre-line; margin-bottom: 28px; }

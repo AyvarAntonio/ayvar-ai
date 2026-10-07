@@ -17,7 +17,7 @@
     <div class="messages-area" #messagesArea (scroll)="onScroll()" [class.has-messages]="messages.length > 0">
       @if (messages.length === 0) {
         <section class="welcome" aria-labelledby="welcome-title">
-          <div class="welcome-main"><app-neural-orb [animated]="preferences.motion()" /><div class="welcome-eyebrow"><span></span>TU INTELIGENCIA CREATIVA<span></span></div>
+          <div class="welcome-main"><app-neural-orb [animated]="preferences.motion()" [color]="preferences.neonColor()" /><div class="welcome-eyebrow"><span></span>TU INTELIGENCIA CREATIVA<span></span></div>
             <h1 id="welcome-title">Piensa en grande.<br><span>Crea sin límites.</span></h1>
             <p class="welcome-description">Una pregunta, una idea, un nuevo comienzo.<br>Soy Ayvar, tu compañero para hacerlo posible.</p>
           </div>
@@ -44,6 +44,17 @@
   <div class="setting-row"><span><strong>Efectos y movimiento</strong><small>Partículas, núcleo animado y texto progresivo.</small></span><button class="switch" role="switch" [attr.aria-checked]="preferences.motion()" aria-label="Efectos y movimiento" (click)="preferences.motion.set(!preferences.motion())"><span></span></button></div>
   <div class="setting-row"><span><strong>Enter para enviar</strong><small>Shift + Enter siempre agrega una nueva línea.</small></span><button class="switch" role="switch" [attr.aria-checked]="preferences.enterToSend()" aria-label="Enter para enviar" (click)="preferences.enterToSend.set(!preferences.enterToSend())"><span></span></button></div>
   <fieldset class="response-style"><legend>¿Cómo prefieres las respuestas?</legend><div>@for (style of responseStyles; track style.id) { <button [class.selected]="preferences.responseStyle() === style.id" [attr.aria-pressed]="preferences.responseStyle() === style.id" (click)="preferences.responseStyle.set(style.id)"><strong>{{ style.title }}</strong><small>{{ style.text }}</small></button> }</div></fieldset>
+  <fieldset class="neon-picker">
+    <legend>Tu color neón</legend>
+    <p>Elige el brillo de tu espacio. Se guarda en este navegador.</p>
+    <div class="neon-colors">@for (color of preferences.neonColors; track color.id) {
+      <button class="neon-swatch" [style.--swatch]="color.hex" [class.selected]="preferences.neonColor() === color.id" [attr.aria-pressed]="preferences.neonColor() === color.id" (click)="preferences.selectNeon(color.id)">
+        <span class="neon-dot">@if (preferences.neonColor() === color.id) { <app-icon name="check" [size]="14" /> }</span><span>{{ color.name }}</span>
+      </button>
+    }</div>
+    <button class="secondary-button neon-shuffle" (click)="preferences.shuffleNeon()"><app-icon name="sparkles" [size]="16" />Sorpréndeme</button>
+  </fieldset>
+  <div class="setting-row"><span><strong>Color aleatorio al entrar</strong><small>Un neón diferente cada vez que abras o recargues la app.</small></span><button class="switch" role="switch" [attr.aria-checked]="preferences.randomNeon()" aria-label="Color aleatorio al entrar" (click)="preferences.toggleRandomNeon()"><span></span></button></div>
   <div class="local-note"><app-icon name="shield" [size]="18" /><p>Tu historial se guarda en este navegador.<br>Puedes exportar cada conversación cuando quieras.</p></div>
   <div class="settings-actions">@if (!pwa.installed()) { <button class="secondary-button" (click)="closeSettings(); pwa.install()"><app-icon name="download" [size]="16" />Instalar app</button> }<button class="primary-button" (click)="closeSettings()">Todo listo<app-icon name="check" [size]="16" /></button></div>
 </dialog>
