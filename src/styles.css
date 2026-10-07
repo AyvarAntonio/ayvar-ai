@@ -1,32 +1,81 @@
-/* Importar fuente */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  color-scheme: dark;
+  --bg: #080a0b;
+  --surface: #101314;
+  --surface-raised: #171b1c;
+  --line: #ffffff0e;
+  --line-strong: #ffffff19;
+  --text: #f0f2ef;
+  --muted: #939b98;
+  --subtle: #656f6a;
+  --accent: #c0f878;
+  --cyan: #6ae8d2;
+  --purple: #b5a0fa;
+  --danger: #ff969e;
+  --font: 'DM Sans', sans-serif;
+  --display: 'Space Grotesk', sans-serif;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background: #fafafa;
-  color: #333;
-}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-width: 320px; height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+button { color: inherit; }
+button:disabled { cursor: not-allowed; opacity: .4; }
+button, a { touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+button { transition: background .2s, border-color .2s, color .2s, transform .2s; }
+button:active:not(:disabled) { transform: translateY(1px); }
+a { color: var(--cyan); }
+::selection { color: #fff; background: #a3cf7140; }
+* { scrollbar-width: thin; scrollbar-color: #38433d transparent; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #38433d; border-radius: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 
-/* Scrollbar personalizada */
-::-webkit-scrollbar {
-  width: 8px;
-}
+.icon-button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; padding: 0; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--muted); }
+.icon-button:hover:not(:disabled) { color: var(--text); background: #ffffff07; border-color: var(--line-strong); }
+.primary-button { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 44px; padding: 11px 18px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: #1b2610; font-weight: 650; }
+.primary-button:hover:not(:disabled) { background: #d2ff99; box-shadow: 0 0 24px #baf87315; }
+.secondary-button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; background: #ffffff04; border: 1px solid var(--line-strong); border-radius: 10px; color: var(--text); }
+.secondary-button:hover:not(:disabled) { background: #ffffff0c; }
+.brand-mark { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; color: var(--accent); background: #c0f8780c; border: 1px solid #c0f87825; border-radius: 11px; }
+.brand-mark svg { width: 24px; height: 24px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.mono { font-family: var(--display); font-size: 10px; letter-spacing: 1.5px; }
+dialog { max-width: calc(100vw - 32px); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 28px; border: 1px solid #c0f87825; border-radius: 20px; background: #121716; color: var(--text); box-shadow: 0 30px 120px #000a, 0 0 60px #c0f87806; }
+dialog::backdrop { background: #030606b8; backdrop-filter: blur(8px); }
+dialog[open] { animation: enter .22s ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
+/* Model output is inserted through Angular's HTML sanitizer. */
+.markdown { overflow-wrap: anywhere; line-height: 1.85; font-size: 14px; color: #dce2dd; }
+.markdown > :first-child { margin-top: 0; }
+.markdown > :last-child { margin-bottom: 0; }
+.markdown p { margin: 0 0 14px; }
+.markdown h1, .markdown h2, .markdown h3, .markdown h4 { font-family: var(--display); color: #f4f6f3; line-height: 1.45; margin: 24px 0 12px; }
+.markdown h1 { font-size: 24px; } .markdown h2 { font-size: 21px; } .markdown h3 { font-size: 18px; }
+.markdown strong { color: #f4f7f1; font-weight: 650; }
+.markdown ul, .markdown ol { padding-left: 23px; margin: 12px 0; }
+.markdown li { padding-left: 3px; margin: 5px 0; }
+.markdown li::marker { color: var(--accent); }
+.markdown pre { max-width: 100%; overflow-x: auto; background: #080c0b; border: 1px solid #ffffff12; border-radius: 12px; padding: 18px; line-height: 1.65; }
+.markdown code { font-family: 'Cascadia Code', Consolas, monospace; font-size: .9em; background: #c0f8780c; color: #c9edab; border-radius: 4px; padding: 2px 5px; }
+.markdown pre code { padding: 0; background: transparent; color: #cce8dc; white-space: pre; overflow-wrap: normal; }
+.markdown blockquote { border-left: 2px solid var(--accent); padding: 8px 16px; margin: 16px 0; background: #c0f87805; color: var(--muted); }
+.markdown blockquote p { margin: 0; }
+.markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 16px 0; }
+.markdown th, .markdown td { padding: 10px 14px; border: 1px solid var(--line-strong); text-align: left; }
+.markdown th { background: #c0f87808; }
+.markdown hr { margin: 22px 0; border: 0; border-top: 1px solid var(--line-strong); }
+.markdown img { max-width: 100%; border-radius: 10px; }
 
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+.motion-off *, .motion-off *::before, .motion-off *::after { animation: none !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: #667eea;
-}
+@media (pointer: coarse) { .icon-button { min-width: 44px; min-height: 44px; } }

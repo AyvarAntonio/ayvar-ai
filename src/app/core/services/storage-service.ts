@@ -1,47 +1,42 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Message } from './interfaces/chat.interface';
+import { NotificationService } from './notification-service';
 
-@Injectable({
-  providedIn: 'root'
-})
+export function restoreMessages(value: unknown): Message[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(message => message && typeof message.id === 'string' && typeof message.content === 'string' && ['user', 'ai'].includes(message.role))
+    .map(message => ({
+      ...message,
+      timestamp: Number.isNaN(new Date(message.timestamp).getTime()) ? new Date() : new Date(message.timestamp),
+      status: message.status === 'sending' || message.status === 'streaming' ? 'stopped' : message.status,
+    }));
+}
+
+@Injectable({ providedIn: 'root' })
 export class StorageService {
-  private readonly STORAGE_KEY = 'ayvar_chats';
+  private readonly notices = inject(NotificationService);
+  private warned = false;
 
-  // Guardar mensajes
-  saveMessages(messages: Message[]): void {
+  read(key: string): string | null {
+    try { return localStorage.getItem(key); } catch { return null; }
+  }
+
+  write(key: string, value: string | null): void {
     try {
-      // Convertir fechas a string para guardar
-      const messagesToSave = messages.map(msg => ({
-        ...msg,
-        timestamp: msg.timestamp.toISOString()
-      }));
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(messagesToSave));
-    } catch (error) {
-      console.error('Error guardando mensajes:', error);
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+      this.warned = false;
+    } catch {
+      if (!this.warned) this.notices.show('No se pudo guardar el historial en este dispositivo. Exporta tu conversación para conservarla.', 'info');
+      this.warned = true;
     }
   }
 
-  // Cargar mensajes
+  saveMessages(messages: Message[]): void { this.write('ayvar_chats', JSON.stringify(messages)); }
   loadMessages(): Message[] {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const messages = JSON.parse(stored);
-        // Restaurar fechas como objetos Date
-        return messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }));
-      }
-      return [];
-    } catch (error) {
-      console.error('Error cargando mensajes:', error);
-      return [];
-    }
+    try { return restoreMessages(JSON.parse(this.read('ayvar_chats') || '[]')); } catch { return []; }
   }
-
-  // Limpiar historial
-  clearMessages(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
-  }
+  clearMessages(): void { this.write('ayvar_chats', null); }
+  getActiveId(): string | null { return this.read('ayvar_active_conversation'); }
+  setActiveId(id: string | null): void { this.write('ayvar_active_conversation', id); }
 }

@@ -1,71 +1,38 @@
-// core/services/conversation-history.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Conversation, Message } from './interfaces/chat.interface';
+import { StorageService, restoreMessages } from './storage-service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ConversationHistoryService {
-  private readonly STORAGE_KEY = 'ayvar_conversations';
+  private readonly storage = inject(StorageService);
+  private readonly key = 'ayvar_conversations';
 
   getAll(): Conversation[] {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (!stored) return [];
     try {
-      const conversations = JSON.parse(stored);
-      return conversations.map((c: any) => ({
-        ...c,
-        date: new Date(c.date),
-        messages: c.messages.map((m: any) => ({
-          ...m,
-          timestamp: new Date(m.timestamp)
-        }))
-      }));
-    } catch {
-      return [];
-    }
+      const stored = JSON.parse(this.storage.read(this.key) || '[]');
+      if (!Array.isArray(stored)) return [];
+      return stored.filter(item => item && typeof item.id === 'string' && Array.isArray(item.messages)).map(item => ({
+        ...item,
+        title: typeof item.title === 'string' ? item.title : 'Nueva conversación',
+        date: Number.isNaN(new Date(item.date).getTime()) ? new Date() : new Date(item.date),
+        messages: restoreMessages(item.messages),
+      })).sort((a, b) => b.date.getTime() - a.date.getTime());
+    } catch { return []; }
   }
 
-  saveAll(conversations: Conversation[]) {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(conversations));
-  }
+  saveAll(conversations: Conversation[]) { this.storage.write(this.key, JSON.stringify(conversations)); }
+  addConversation(conversation: Conversation) { this.saveAll([conversation, ...this.getAll().filter(item => item.id !== conversation.id)]); }
+  updateConversation(conversation: Conversation) { this.addConversation(conversation); }
+  deleteConversation(id: string) { this.saveAll(this.getAll().filter(item => item.id !== id)); }
+  clearAll() { this.storage.write(this.key, null); }
 
-  addConversation(convo: Conversation) {
-    const all = this.getAll();
-    all.unshift(convo);
-    this.saveAll(all);
-  }
-
-  updateConversation(convo: Conversation) {
-    const all = this.getAll();
-    const idx = all.findIndex(c => c.id === convo.id);
-    if (idx !== -1) {
-      all[idx] = convo;
-      this.saveAll(all);
-    }
-  }
-
-  deleteConversation(id: string) {
-    const all = this.getAll();
-    const filtered = all.filter(c => c.id !== id);
-    this.saveAll(filtered);
-  }
-
-  clearAll() {
-    localStorage.removeItem(this.STORAGE_KEY);
-  }
-
-  // Crear nueva conversación desde mensajes
   createFromMessages(messages: Message[], id?: string): Conversation {
-    const title = messages.length > 0 
-      ? messages[0].content.substring(0, 50) + (messages[0].content.length > 50 ? '...' : '')
-      : 'Nueva conversación';
-    
+    const first = messages.find(message => message.role === 'user')?.content || 'Nueva conversación';
     return {
-      id: id || Date.now().toString(),
-      title,
+      id: id || crypto.randomUUID(),
+      title: first.slice(0, 50) + (first.length > 50 ? '…' : ''),
       date: new Date(),
-      messages: [...messages]
+      messages: messages.map(message => ({ ...message })),
     };
   }
 }

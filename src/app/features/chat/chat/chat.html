@@ -1,1 +1,50 @@
-<p>chat works!</p>
+<a class="skip-link" href="#message-composer">Ir al chat</a>
+<div class="app-shell">
+  <app-sidebar-conversations #sidebar [conversations]="conversations" [selectedId]="currentConversationId" [isOpen]="sidebarOpen" [mode]="mode" (closed)="sidebarOpen = false" (conversationSelected)="loadConversation($event)" (conversationDeleted)="deleteConversation($event)" (newChatClicked)="startNewChat()" (modeSelected)="setMode($event)" (settingsClicked)="openSettings()" />
+
+  <main class="workspace">
+    <div class="ambient-background" aria-hidden="true"><div class="ambient-glow glow-lime"></div><div class="ambient-glow glow-cyan"></div><div class="ambient-grid"></div><div class="ambient-horizon"></div>@for (particle of particles; track $index) { <i class="ambient-particle" [style.left.%]="particle.x" [style.top.%]="particle.y" [style.animation-delay]="particle.delay + 's'" [style.animation-duration]="particle.duration + 's'"></i> }</div>
+
+    <header class="workspace-header">
+      <div class="header-location"><button class="icon-button mobile-menu" (click)="sidebarOpen = true" aria-label="Abrir menú" [attr.aria-expanded]="sidebarOpen"><app-icon name="menu" /></button><app-icon class="workspace-icon" name="sparkles" [size]="17" /><span class="workspace-label">{{ modeNames[mode] }}</span><span class="breadcrumb-divider">/</span><span class="current-conversation" [title]="currentTitle">{{ currentTitle }}</span></div>
+      <div class="header-actions"><span class="connection-status" [class.offline]="!isOnline"><i></i>{{ isOnline ? 'EN LÍNEA' : 'SIN CONEXIÓN' }}</span><span class="header-divider"></span><button class="icon-button effects-toggle" (click)="preferences.motion.set(!preferences.motion())" [attr.aria-pressed]="preferences.motion()" [attr.aria-label]="preferences.motion() ? 'Pausar animaciones' : 'Activar animaciones'" [title]="preferences.motion() ? 'Pausar animaciones' : 'Activar animaciones'"><app-icon [name]="preferences.motion() ? 'zap' : 'pause'" [size]="17" /></button><button class="icon-button" (click)="exportChat()" [disabled]="!messages.length" aria-label="Exportar conversación" title="Exportar conversación"><app-icon name="download" [size]="18" /></button><button class="icon-button" (click)="openSettings()" aria-label="Personalizar experiencia" title="Personalizar experiencia"><app-icon name="sliders" [size]="18" /></button><button class="icon-button mobile-new" (click)="startNewChat()" aria-label="Nueva conversación"><app-icon name="plus" [size]="20" /></button></div>
+    </header>
+
+    @if (!isOnline) { <div class="offline-banner" role="status"><app-icon name="wifiOff" [size]="16" /><span>Estás sin conexión. Tus conversaciones guardadas siguen aquí.</span></div> }
+
+    <div class="workspace-topline"><span class="model-badge"><app-icon name="zap" [size]="12" />Gemini 2.5 Flash<span>↗</span></span><span class="workspace-caption">UN ESPACIO. INFINITAS POSIBILIDADES.</span></div>
+
+    <div class="messages-area" #messagesArea (scroll)="onScroll()" [class.has-messages]="messages.length > 0">
+      @if (messages.length === 0) {
+        <section class="welcome" aria-labelledby="welcome-title">
+          <div class="welcome-main"><app-neural-orb [animated]="preferences.motion()" /><div class="welcome-eyebrow"><span></span>TU INTELIGENCIA CREATIVA<span></span></div>
+            <h1 id="welcome-title">Piensa en grande.<br><span>Crea sin límites.</span></h1>
+            <p class="welcome-description">Una pregunta, una idea, un nuevo comienzo.<br>Soy Ayvar, tu compañero para hacerlo posible.</p>
+          </div>
+          <div class="suggestions-section"><div class="suggestions-heading"><span>¿Por dónde empezamos?</span><span class="suggestions-hint">ELIGE UNA CHISPA<app-icon name="diagonal" [size]="11" /></span></div><div class="suggestions-grid">@for (suggestion of suggestions; track suggestion.title) { <button class="suggestion-card" [class]="'suggestion-card ' + suggestion.color" (click)="useSuggestion(suggestion)"><span class="suggestion-icon"><app-icon [name]="suggestion.icon" [size]="19" /></span><app-icon class="suggestion-arrow" name="diagonal" [size]="15" /><h2>{{ suggestion.title }}</h2><p>{{ suggestion.description }}</p></button> }</div></div>
+          <div class="welcome-bottom"><span class="tiny-star">✧</span>Las mejores ideas empiezan con una conversación.</div>
+        </section>
+      } @else {
+        <section class="messages-list" aria-label="Conversación con Ayvar"><div class="conversation-start"><span></span><app-icon name="sparkles" [size]="12" />El inicio de una nueva idea<span></span></div>@for (message of messages; track message.id; let last = $last) { <app-message-bubble [message]="message" [canRegenerate]="last && message.role === 'ai' && !isLoading" (regenerate)="regenerate($event)" /> }</section>
+      }
+    </div>
+
+    <div class="composer-section" id="message-composer">
+      @if (showScrollButton) { <button class="scroll-bottom" (click)="scrollToBottom()" aria-label="Ir al último mensaje"><app-icon name="down" [size]="16" />Ir al último mensaje</button> }
+      <app-chat-input #chatInput [busy]="isLoading" [offline]="!isOnline" [mode]="mode" [hasContext]="messages.length > 0" (send)="handleSendMessage($event)" (stop)="stopReply()" (modeChanged)="setMode($event)" />
+    </div>
+    <footer class="workspace-footer"><span><span class="footer-dot"></span>DISEÑADO PARA TU CURIOSIDAD</span><span>AYVAR AI<span class="footer-slash">/</span>HUMAN IDEAS. ARTIFICIAL INTELLIGENCE.</span></footer>
+  </main>
+</div>
+<div class="sr-only" role="status" aria-live="polite">{{ announcement }}</div>
+
+<dialog #settingsDialog class="settings-dialog" aria-labelledby="settings-title" (click)="settingsBackdrop($event)">
+  <div class="settings-top"><span class="settings-icon"><app-icon name="sliders" [size]="23" /></span><button class="icon-button" (click)="closeSettings()" aria-label="Cerrar ajustes" autofocus><app-icon name="close" /></button></div>
+  <span class="settings-eyebrow">A TU MANERA</span><h2 id="settings-title">Tu espacio, tus reglas.</h2><p class="settings-intro">Los pequeños detalles hacen la diferencia.</p>
+  <div class="setting-row"><span><strong>Efectos y movimiento</strong><small>Partículas, núcleo animado y texto progresivo.</small></span><button class="switch" role="switch" [attr.aria-checked]="preferences.motion()" aria-label="Efectos y movimiento" (click)="preferences.motion.set(!preferences.motion())"><span></span></button></div>
+  <div class="setting-row"><span><strong>Enter para enviar</strong><small>Shift + Enter siempre agrega una nueva línea.</small></span><button class="switch" role="switch" [attr.aria-checked]="preferences.enterToSend()" aria-label="Enter para enviar" (click)="preferences.enterToSend.set(!preferences.enterToSend())"><span></span></button></div>
+  <fieldset class="response-style"><legend>¿Cómo prefieres las respuestas?</legend><div>@for (style of responseStyles; track style.id) { <button [class.selected]="preferences.responseStyle() === style.id" [attr.aria-pressed]="preferences.responseStyle() === style.id" (click)="preferences.responseStyle.set(style.id)"><strong>{{ style.title }}</strong><small>{{ style.text }}</small></button> }</div></fieldset>
+  <div class="local-note"><app-icon name="shield" [size]="18" /><p>Tu historial se guarda en este navegador.<br>Puedes exportar cada conversación cuando quieras.</p></div>
+  <div class="settings-actions">@if (!pwa.installed()) { <button class="secondary-button" (click)="closeSettings(); pwa.install()"><app-icon name="download" [size]="16" />Instalar app</button> }<button class="primary-button" (click)="closeSettings()">Todo listo<app-icon name="check" [size]="16" /></button></div>
+</dialog>
+<app-notifications />

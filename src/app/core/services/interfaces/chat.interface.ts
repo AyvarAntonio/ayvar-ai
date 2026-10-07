@@ -3,7 +3,8 @@ export interface Message {
   content: string;
   role: 'user' | 'ai';
   timestamp: Date;
-  status?: 'sending' | 'sent' | 'error';
+  status?: 'sending' | 'streaming' | 'sent' | 'error' | 'stopped';
+  responseTime?: number;
 }
 
 export interface ChatSession {

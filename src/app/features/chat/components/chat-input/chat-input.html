@@ -1,1 +1,17 @@
-<p>chat-input works!</p>
+<form class="composer" [class.focused]="focused" [class.busy]="busy" [class.listening]="listening()" (ngSubmit)="sendMessage()">
+  <div class="textarea-row"><app-icon name="sparkles" [size]="21" /><textarea #messageInput name="message" aria-label="Tu mensaje para Ayvar" [(ngModel)]="message" (input)="autoResize()" (keydown.enter)="onEnter($event)" (focus)="focused = true" (blur)="focused = false" [placeholder]="listening() ? 'Te escucho… cuéntame tu idea' : 'Pregunta, imagina, crea… lo que tengas en mente.'" rows="1" maxlength="12000"></textarea></div>
+  <div class="composer-toolbar">
+    <div class="composer-options">
+      <label class="mode-select"><app-icon name="zap" [size]="13" /><select name="mode" aria-label="Modo de conversación" [ngModel]="mode" (ngModelChange)="modeChanged.emit($event)" [disabled]="busy"><option value="general">General</option><option value="create">Creativo</option><option value="code">Código</option><option value="learn">Aprender</option></select></label>
+      <span class="context-indicator" [class.active]="hasContext"><span></span>{{ hasContext ? 'Contexto activo' : 'Un mundo de posibilidades' }}</span>
+    </div>
+    <div class="send-actions">
+      @if (message.length > 10000) { <span class="char-count">{{ message.length }} / 12000</span> }
+      @if (listening()) { <span class="voice-waves" aria-label="Escuchando"><i></i><i></i><i></i><i></i></span> }
+      @if (voiceSupported) { <button type="button" class="icon-button voice-button" [class.active]="listening()" (click)="toggleVoice()" [disabled]="busy || offline" [attr.aria-pressed]="listening()" [attr.aria-label]="listening() ? 'Terminar dictado' : 'Dictar un mensaje'" [title]="listening() ? 'Terminar dictado' : 'Dictar un mensaje'"><app-icon [name]="listening() ? 'stop' : 'mic'" [size]="18" /></button> }
+      @if (busy) { <button type="button" class="send-button stop-button" (click)="stop.emit()" aria-label="Detener respuesta" title="Detener respuesta"><app-icon name="stop" [size]="17" /></button> }
+      @else { <button type="submit" class="send-button" [disabled]="!message.trim() || offline" aria-label="Enviar mensaje" title="Enviar mensaje"><app-icon name="up" [size]="20" /></button> }
+    </div>
+  </div>
+</form>
+<div class="composer-caption"><span>Ayvar puede cometer errores. Verifica la información importante.</span><span class="keyboard-hint"><kbd>{{ preferences.enterToSend() ? '↵' : '⌘ / Ctrl ↵' }}</kbd> para enviar<span class="hint-separator">·</span><kbd>Shift ↵</kbd> nueva línea</span></div>

@@ -1,1 +1,26 @@
-<p>message-bubble works!</p>
+<article class="message" [class.user-message]="message.role === 'user'" [class.error-message]="message.status === 'error'" [attr.aria-label]="message.role === 'user' ? 'Tu mensaje' : 'Respuesta de Ayvar'">
+  @if (message.role === 'ai') { <div class="ai-avatar" [class.thinking]="message.status === 'sending'"><app-icon name="sparkles" [size]="19" /></div> }
+  <div class="message-body">
+    <div class="message-heading"><span class="sender">{{ message.role === 'user' ? 'Tú' : 'Ayvar' }}</span>@if (message.role === 'ai') { <span class="ai-label">AI</span> }<time>{{ message.timestamp | date:'HH:mm' }}</time></div>
+    @if (message.status === 'sending') {
+      <div class="thinking-row" role="status"><span class="thinking-dots"><i></i><i></i><i></i></span><span>Preparando tu respuesta<span class="thinking-ellipsis">…</span></span></div>
+    } @else if (message.status === 'error') {
+      <div class="error-content"><app-icon name="info" [size]="18" /><p>{{ message.content }}</p></div>
+    } @else if (message.role === 'user') {
+      <div class="user-content">{{ message.content }}</div>
+    } @else {
+      <div #answer class="markdown" [class.revealing]="message.status === 'streaming'" [innerHTML]="message.content | markdown" [attr.aria-busy]="message.status === 'streaming'"></div>
+    }
+    @if (message.role === 'ai' && message.status !== 'sending' && message.status !== 'streaming') {
+      <div class="message-actions">
+        @if (message.status !== 'error' && message.content) {
+          <button class="icon-button" (click)="copy()" aria-label="Copiar respuesta" title="Copiar respuesta"><app-icon name="copy" [size]="15" /></button>
+          @if (speech.supported) { <button class="icon-button" [class.speaking]="speech.speakingId() === message.id" (click)="speak()" [attr.aria-label]="speech.speakingId() === message.id ? 'Detener lectura' : 'Escuchar respuesta'" [title]="speech.speakingId() === message.id ? 'Detener lectura' : 'Escuchar respuesta'"><app-icon [name]="speech.speakingId() === message.id ? 'stop' : 'volume'" [size]="16" /></button> }
+        }
+        @if (canRegenerate) { <button class="retry-button" (click)="regenerate.emit(message.id)" [attr.aria-label]="message.status === 'error' ? 'Reintentar respuesta' : 'Volver a generar respuesta'" title="Volver a generar"><app-icon name="retry" [size]="15" />@if (message.status === 'error' || message.status === 'stopped') { <span>Volver a intentar</span> }</button> }
+        @if (message.status === 'stopped') { <span class="response-meta">Respuesta detenida</span> }
+        @else if (message.responseTime) { <span class="response-meta"><app-icon name="zap" [size]="10" />{{ message.responseTime | number:'1.1-1' }} s</span> }
+      </div>
+    }
+  </div>
+</article>

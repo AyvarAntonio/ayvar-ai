@@ -1,0 +1,38 @@
+:host { display: block; width: 100%; }
+.composer { position: relative; padding: 18px 17px 12px; background: linear-gradient(115deg, #181f19f5, #121615f5 65%); border: 1px solid #b7d49b29; border-radius: 17px; box-shadow: 0 12px 45px #0003, 0 0 30px #c0f87803; transition: border-color .3s, box-shadow .3s; }
+.composer::before { content: ''; position: absolute; top: -1px; left: 9%; width: 45%; height: 1px; background: linear-gradient(90deg, transparent, #b2ee6c88, transparent); pointer-events: none; }
+.composer.focused { border-color: #c0f87865; box-shadow: 0 0 0 3px #c0f87805, 0 12px 45px #0003; }
+.composer.busy::before { animation: scan 3s ease-in-out infinite; }
+.textarea-row { display: flex; align-items: flex-start; gap: 12px; }
+.textarea-row > app-icon { margin-top: 3px; color: #9cb48a; }
+textarea { flex: 1; width: 100%; min-width: 0; padding: 2px 0 10px; border: 0; background: transparent; color: #e5eae2; line-height: 1.65; font-size: 13px; resize: none; outline: none; max-height: 160px; min-height: 42px; }
+textarea::placeholder { color: #7e897c; }
+textarea:focus-visible { outline: none; }
+.composer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 9px; }
+.composer-options { display: flex; align-items: center; gap: 15px; min-width: 0; }
+.mode-select { display: flex; align-items: center; gap: 5px; padding: 5px 7px; border: 1px solid #ffffff14; border-radius: 6px; color: #c2d4b0; background: #ffffff02; }
+.mode-select select { background: transparent; color: #bdcbb7; border: 0; font: 10px var(--font); cursor: pointer; padding: 2px 3px 2px 0; max-width: 95px; }
+.mode-select option { background: var(--surface); color: var(--text); }
+.context-indicator { display: flex; align-items: center; gap: 6px; color: #74816e; font-size: 9px; white-space: nowrap; }
+.context-indicator > span { width: 4px; height: 4px; background: #78866e; border-radius: 50%; }
+.context-indicator.active { color: #a5bc94; }.context-indicator.active > span { background: var(--accent); }
+.send-actions { display: flex; align-items: center; gap: 8px; }
+.voice-button { width: 32px; height: 32px; color: #8a9981; }
+.voice-button.active { color: var(--accent); background: #c0f87812; }
+.send-button { width: 34px; height: 34px; flex-shrink: 0; border: 1px solid #d0fc9c; border-radius: 9px; background: var(--accent); color: #27361b; display: grid; place-items: center; box-shadow: 0 0 16px #c0f87814; }
+.send-button:hover:not(:disabled) { background: #d6ffa3; box-shadow: 0 0 20px #c0f87830; transform: translateY(-1px); }
+.send-button:disabled { background: #a9d577; border-color: #b9e588; opacity: .6; }
+.stop-button { background: #c0f87815; color: var(--accent); border-color: #c0f87845; }
+.stop-button:hover { color: #1a2515; }
+.composer-caption { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #798077; font-size: 9px; margin: 13px 4px 0; line-height: 1.6; }
+.keyboard-hint { display: flex; gap: 4px; align-items: center; white-space: nowrap; font-size: 8px; }
+kbd { font: inherit; color: #9aa08f; }
+.hint-separator { margin: 0 3px; }
+.char-count { font-size: 10px; color: var(--muted); white-space: nowrap; }
+.voice-waves { display: flex; align-items: center; gap: 2px; height: 20px; }
+.voice-waves i { width: 2px; height: 10px; background: var(--accent); animation: waveform .7s ease-in-out infinite alternate; }
+.voice-waves i:nth-child(2n) { animation-delay: -.3s; height: 16px; }
+@keyframes waveform { to { transform: scaleY(.3); } }
+@keyframes scan { 50% { transform: translateX(90%); } }
+@media(max-width: 1200px) { .keyboard-hint { display: none; }.composer-caption { justify-content: center; } }
+@media(max-width: 600px) { .composer { padding: 14px 12px 10px; border-radius: 15px; }textarea { font-size: 16px; min-height: 44px; padding-top: 0; }.textarea-row { gap: 9px; }.textarea-row > app-icon { margin-top: 4px; }.context-indicator { display: none; }.composer-toolbar { margin-top: 3px; }.send-button { width: 40px; height: 40px; }.composer-caption { font-size: 8px; margin-top: 9px; text-align: center; }.composer-options { gap: 8px; }.mode-select { padding: 6px; }.mode-select select { font-size: 11px; }.send-actions { gap: 6px; }.char-count { font-size: 8px; } }
