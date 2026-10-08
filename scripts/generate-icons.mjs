@@ -2,7 +2,7 @@ import { deflateSync } from 'node:zlib';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-// Dependency-free, supersampled PNG generation from the same mark as icons/ayvar.svg.
+// Usa el mismo diseño de icons/ayvar.svg y varias muestras por píxel para suavizar los bordes del PNG.
 const directory = fileURLToPath(new URL('../public/icons/', import.meta.url));
 mkdirSync(directory, { recursive: true });
 const polygon = [[130,356],[244,126],[280,126],[394,356],[331,356],[300,291],[214,291],[239,241],[276,241],[260,205],[186,356]];

@@ -7,7 +7,7 @@ export class MarkdownPipe implements PipeTransform {
     breaks: true,
     gfm: true,
     renderer: {
-      // Treat raw HTML as text. Angular also sanitizes the final innerHTML binding.
+      // El HTML recibido se muestra como texto; Angular también filtra el resultado al insertarlo con innerHTML.
       html: ({ text }) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
     },
   });

@@ -45,7 +45,7 @@ export class PreferencesService {
       if (['balanced', 'concise', 'detailed'].includes(saved.responseStyle)) this.responseStyle.set(saved.responseStyle);
       if (NEON_COLORS.some(color => color.id === saved.neonColor)) this.neonColor.set(saved.neonColor);
       if (typeof saved.randomNeon === 'boolean') this.randomNeon.set(saved.randomNeon);
-    } catch { /* Keep device-aware defaults when storage is unavailable. */ }
+    } catch { /* Si falla la lectura, conservamos los valores por defecto según el dispositivo. */ }
     if (this.randomNeon()) this.shuffleNeon();
     effect(() => {
       const preferences = { motion: this.motion(), enterToSend: this.enterToSend(), responseStyle: this.responseStyle(), neonColor: this.neonColor(), randomNeon: this.randomNeon() };
@@ -54,7 +54,7 @@ export class PreferencesService {
       document.documentElement.style.setProperty('--accent-rgb', palette.rgb);
       document.documentElement.style.setProperty('--neon-hue', String(palette.hue));
       document.documentElement.classList.toggle('motion-off', !preferences.motion);
-      try { localStorage.setItem('ayvar_preferences', JSON.stringify(preferences)); } catch { /* Preferences still work for this visit. */ }
+      try { localStorage.setItem('ayvar_preferences', JSON.stringify(preferences)); } catch { /* Aunque no se guarden, las preferencias siguen funcionando durante esta visita xd */ }
     });
   }
 }

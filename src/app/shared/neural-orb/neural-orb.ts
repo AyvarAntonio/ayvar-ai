@@ -61,6 +61,7 @@ export class NeuralOrbComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (!this.context) return;
     this.draw(0.4);
     if (this.animated && !this.reduced?.matches && !document.hidden) {
+      // La animación corre fuera de Angular para evitar la detección de cambios en cada cuadro.
       this.zone.runOutsideAngular(() => { this.frame = requestAnimationFrame(time => this.tick(time)); });
     }
   }
@@ -84,7 +85,6 @@ export class NeuralOrbComponent implements AfterViewInit, OnChanges, OnDestroy {
       const z = Math.cos(latitude) * Math.sin(longitude + angle);
       return { x: 140 + (x * .96 - y * .28) * 65, y: 100 + (y * .96 + x * .28) * 65, z };
     };
-    // A rotating latitude/longitude mesh, rendered outside Angular's change detection.
     for (let row = 1; row < 17; row++) {
       const latitude = -Math.PI / 2 + row * Math.PI / 17;
       for (let col = 0; col < 40; col++) {

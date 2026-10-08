@@ -28,7 +28,7 @@ export async function handler(event) {
   const turns = (Array.isArray(history) ? history : []).slice(-20)
     .filter(turn => turn && ['user', 'ai'].includes(turn.role) && typeof turn.content === 'string' && turn.content.trim())
     .map(turn => ({ role: turn.role === 'ai' ? 'model' : 'user', parts: [{ text: turn.content.slice(0, 16000) }] }));
-  // Gemini conversations must start with the user, including after history truncation.
+  // Gemini exige que el usuario hable primero, incluso después de recortar el historial xd
   while (turns.length && turns[0].role !== 'user') turns.shift();
   turns.push({ role: 'user', parts: [{ text: message.trim() }] });
 
